@@ -14,7 +14,12 @@ class CategorySeeder extends Seeder
      */
     public function run(): void
     {
-        Category::create(['name' => 'PHP']);
-        Category::create(['name' => 'JavaScript']);
+        $categories = ['PHP', 'JavaScript', 'Laravel', 'React', 'MySQL'];
+
+        foreach ($categories as $name) {
+            Category::create(['name' => $name]);
+        }
     }
 }
+
+

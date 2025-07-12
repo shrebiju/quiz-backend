@@ -2,9 +2,23 @@
 
 namespace App\Models;
 
+
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+//use of this hasFactory need to know 
 use Illuminate\Database\Eloquent\Model;
+use App\Models\UserAnswer;
 
 class Answer extends Model
 {
-    //
+    use HasFactory;
+    protected $fillable = [
+        'question_id',
+        'answer_text',
+        'is_correct',
+    ];
+
+    public function userAnswers()
+    {
+        return $this->hasMany(UserAnswer::class);
+    }
 }

@@ -7,6 +7,8 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
+use App\Models\QuizAttempt;
+
 
 
 class User extends Authenticatable
@@ -36,6 +38,11 @@ class User extends Authenticatable
         'remember_token',
     ];
 
+
+    public function quizAttempts()
+    {
+        return $this->hasMany(QuizAttempt::class);
+    }
     /**
      * Get the attributes that should be cast.
      *

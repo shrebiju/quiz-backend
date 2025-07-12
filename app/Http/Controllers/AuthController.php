@@ -11,20 +11,28 @@ class AuthController extends Controller
 {
     public function register(Request $request)
     {
-        $request->validate([
-            'name' => 'required',
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
             'email' => 'required|email|unique:users,email',
-            'password' => 'required|min:6|confirmed',
+            'password' => 'required|string|min:8|confirmed',
+            'role' => 'required|in:admin,user'
         ]);
-
-        User::create([
-            'name' => $request->name,
-            'email' => $request->email,
-            'password' => Hash::make($request->password),
-            'role' => 'user',
+    
+        $user = User::create([
+            'name' => $validated['name'],
+            'email' => $validated['email'],
+            'password' => Hash::make($validated['password']),
+            'role' => $validated['role'],
         ]);
-
-        return response()->json(['message' => 'User registered successfully'], 201);
+    
+        $token = $user->createToken('quiz_app_token')->plainTextToken;
+    
+        return response()->json([
+            'message' => 'Registration successful',
+            'access_token' => $token,
+            'token_type' => 'Bearer',
+            'user' => $user->only(['id', 'name', 'email', 'role'])
+        ], 201);
     }
     public function login(Request $request)
     {
@@ -40,15 +48,29 @@ class AuthController extends Controller
         }
     
         $user = Auth::user();
-        $token = $user->createToken('auth_token')->plainTextToken;
+        $token = $user->createToken('quiz_app_token')->plainTextToken;
     
         return response()->json([
             'message' => 'Login successful',
             'access_token' => $token,
             'token_type' => 'Bearer',
-            'user' => $user,
+            // 'user' => $user,
+            'user' => $user->only(['id', 'name', 'email', 'role'])
         ]);
     }
-    
-
+    public function logout(Request $request)
+    {
+        // $request->user()->tokens()->delete(); for all devices logout as we are just testing so currentAccesstoken is useful 
+        $request->user()->currentAccessToken()->delete();
+        return response()->json([
+            'message' => 'Successfully logged out'
+        ]);
+    }
+    //Ignore this code
+    // public function sessions(Request $request)
+    // {
+    //     return response()->json([
+    //         'active_sessions' => $request->user()->tokens()->get(['id', 'name', 'last_used_at'])
+    //     ]);
+    // }
 }

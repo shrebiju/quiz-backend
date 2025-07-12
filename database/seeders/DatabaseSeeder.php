@@ -18,13 +18,19 @@ class DatabaseSeeder extends Seeder
         //     'email' => 'test@example.com',
         // ]);
 
-        User::firstOrCreate(
-            ['email' => 'test@example.com'],
-            [
-                'name' => 'Test User',
-                'password' => bcrypt('password'), // or use your hash
-            ]
-        );
+        // User::firstOrCreate(
+        //     ['email' => 'test@example.com'],
+        //     [
+        //         'name' => 'Test User',
+        //         'password' => bcrypt('password'), 
+        //     ]
+        // );
+        User::factory()->create([ 
+            'name' => 'Admin User',
+            'email' => 'admin@admin.com',
+            'password' => bcrypt('password'), 
+            'role' => 'admin',
+        ]);
 
         // Call other seeders here
         $this->call([
@@ -34,7 +40,8 @@ class DatabaseSeeder extends Seeder
             AnswerSeeder::class,
             QuizAttemptSeeder::class,
             UserAnswerSeeder::class,
-            // Add more seeders as you create them
         ]);
     }
 }
+
+

@@ -10,8 +10,9 @@ class QuizAttemptSeeder extends Seeder
     /**
      * Run the database seeds.
      */
-    public function run(): void
+    // database/seeders/QuizAttemptSeeder.php
+    public function run()
     {
-        //
+        \App\Models\QuizAttempt::factory()->count(10)->create();
     }
 }

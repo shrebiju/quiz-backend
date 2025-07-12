@@ -13,8 +13,12 @@ return new class extends Migration
     {
         Schema::create('user_answers', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('attempt_id')->constrained('quiz_attempts')->onDelete('cascade');
+            $table->foreignId('question_id')->constrained()->onDelete('cascade');
+            $table->foreignId('answer_id')->constrained()->onDelete('cascade');
+            $table->boolean('is_correct')->default(false);
             $table->timestamps();
-        });
+        });        
     }
 
     /**
@@ -25,3 +29,5 @@ return new class extends Migration
         Schema::dropIfExists('user_answers');
     }
 };
+
+
