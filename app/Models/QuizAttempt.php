@@ -9,8 +9,6 @@ use App\Models\Quiz;
 use App\Models\User;
 use App\Models\UserAnswers;
 
-
-
 class QuizAttempt extends Model
 {
     use HasFactory;
