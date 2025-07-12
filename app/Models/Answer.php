@@ -4,7 +4,6 @@ namespace App\Models;
 
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-//use of this hasFactory need to know 
 use Illuminate\Database\Eloquent\Model;
 use App\Models\UserAnswer;
 

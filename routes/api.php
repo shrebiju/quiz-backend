@@ -31,7 +31,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::get('/admin-test', function() {
         return response()->json(['status' => 'Admin verified!']);
-    })->middleware(['auth:sanctum', \App\Http\Middleware\CheckAdmin::class]); // Using FQCN  
+    })->middleware(['auth:sanctum', \App\Http\Middleware\CheckAdmin::class]);  
     
     //for quiz history 
     Route::get('/my-attempts', [QuizController::class, 'myAttempts']);

@@ -17,7 +17,6 @@ class DifficultyLevelController extends Controller
         $validated = $request->validate([
             'name' => 'required|string|unique:difficulty_levels'
         ]);
-        
         return DifficultyLevel::create($validated);
     }
 
@@ -26,7 +25,6 @@ class DifficultyLevelController extends Controller
         $validated = $request->validate([
             'name' => 'required|string|unique:difficulty_levels,name,'.$difficulty_level->id
         ]);
-        
         $difficulty_level->update($validated);
         return $difficulty_level;
     }

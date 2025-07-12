@@ -30,9 +30,7 @@ class QuizAttemptController extends Controller
                 $request->end_date
             ]);
         }
-
         $attempts = $query->paginate(10);
-
         return response()->json($attempts);
     }
 }

@@ -24,9 +24,7 @@ class AuthController extends Controller
             'password' => Hash::make($validated['password']),
             'role' => $validated['role'],
         ]);
-    
         $token = $user->createToken('quiz_app_token')->plainTextToken;
-    
         return response()->json([
             'message' => 'Registration successful',
             'access_token' => $token,
@@ -54,7 +52,6 @@ class AuthController extends Controller
             'message' => 'Login successful',
             'access_token' => $token,
             'token_type' => 'Bearer',
-            // 'user' => $user,
             'user' => $user->only(['id', 'name', 'email', 'role'])
         ]);
     }
@@ -66,11 +63,4 @@ class AuthController extends Controller
             'message' => 'Successfully logged out'
         ]);
     }
-    //Ignore this code
-    // public function sessions(Request $request)
-    // {
-    //     return response()->json([
-    //         'active_sessions' => $request->user()->tokens()->get(['id', 'name', 'last_used_at'])
-    //     ]);
-    // }
 }
