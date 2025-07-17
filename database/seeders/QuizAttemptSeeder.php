@@ -13,6 +13,6 @@ class QuizAttemptSeeder extends Seeder
     // database/seeders/QuizAttemptSeeder.php
     public function run()
     {
-        \App\Models\QuizAttempt::factory()->count(10)->create();
+        // \App\Models\QuizAttempt::factory()->count(10)->create();
     }
 }

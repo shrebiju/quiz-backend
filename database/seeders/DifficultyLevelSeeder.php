@@ -25,13 +25,3 @@ class DifficultyLevelSeeder extends Seeder
     }
 }
 
-//     public function run(): void
-//     {
-//         //
-//         DB::table('difficulty_levels')->insert([
-//             ['name' => 'Beginner', 'created_at' => now(), 'updated_at' => now()],
-//             ['name' => 'Intermediate', 'created_at' => now(), 'updated_at' => now()],
-//             ['name' => 'Advanced', 'created_at' => now(), 'updated_at' => now()],
-//         ]);
-//     }
-// }
