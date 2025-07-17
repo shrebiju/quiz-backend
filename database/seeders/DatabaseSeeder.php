@@ -12,11 +12,18 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
+        //Auto generate admin and user  
         User::factory()->create([ 
             'name' => 'Admin User',
             'email' => 'admin@admin.com',
             'password' => bcrypt('password'), 
             'role' => 'admin',
+        ]);
+        User::factory()->create([
+            'name' => 'Regular User',
+            'email' => 'user01@example.com',
+            'password' => bcrypt('password'),
+            'role' => 'user',
         ]);
         $this->call([
             CategorySeeder::class,
