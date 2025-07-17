@@ -7,13 +7,11 @@ use App\Models\Quiz;
 
 class QuizController extends Controller
 {
-        // Admin view of quizzes
+    // this one is for quiz to show in admin as Multiple Quiz
         public function adminIndex()
         {
             return Quiz::with(['category', 'difficultyLevel'])->get();
         }
-    
-        // Create quiz
         public function store(Request $request)
         {
             // dd($request);
@@ -34,10 +32,11 @@ class QuizController extends Controller
     
             return response()->json($quiz, 201);
         }
-    
-        // Admin get one quiz (optional)
+        // this one is for quiz to show in admin as Multiple Quiz question section
         public function show($id)
         {
-            return Quiz::with(['category', 'difficultyLevel'])->findOrFail($id);
+            $quiz = Quiz::with(['questions'])->findOrFail($id);
+            return response()->json($quiz);
         }
+
 }

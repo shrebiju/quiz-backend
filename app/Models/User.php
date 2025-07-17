@@ -43,6 +43,10 @@ class User extends Authenticatable
     {
         return $this->hasMany(QuizAttempt::class);
     }
+    // public function isAdmin()
+    // {
+    //     return $this->role === 'admin';
+    // }
     /**
      * Get the attributes that should be cast.
      *

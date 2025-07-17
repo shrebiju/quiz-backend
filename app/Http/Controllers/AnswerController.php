@@ -16,44 +16,33 @@ class AnswerController extends Controller
 
     public function store(Request $request, $questionId)
     {
-        $validated = $request->validate([
-            'answer_text' => [
-                'required',
-                'string',
-                'max:255',
-                // Rule::unique('answers')->where('question_id', $questionId)
-            ],
-            'is_correct' => 'required|boolean'
+        $request->validate([
+            'answer_text' => 'required|string',
+            'is_correct' => 'required|boolean',
         ]);
-        // public function store(Request $request, $questionId)
-        // {
-        //     $validated = $request->validate([
-        //         'answer_text' => 'required|string|max:255',
-        //         'is_correct' => 'required|boolean',
-        //     ]);
-        
-        //     // If a new correct answer is being added, mark all others as incorrect
-        //     if ($validated['is_correct']) {
-        //         Answer::where('question_id', $questionId)->update(['is_correct' => false]);
-        //     }
-        
-        //     $answer = Answer::create([
-        //         'question_id' => $questionId,
-        //         'answer_text' => $validated['answer_text'],
-        //         'is_correct' => $validated['is_correct'],
-        //     ]);
-        
-        //     return response()->json($answer, 201);
-        // }
-        
+    
+        // If is_correct is true, ensure no other correct answer exists for this question
+        if ($request->is_correct) {
+            $existingCorrect = Answer::where('question_id', $questionId)
+                                    ->where('is_correct', true)
+                                    ->first();
+    
+            if ($existingCorrect) {
+                return response()->json([
+                    'message' => 'Only one correct answer is allowed per question.'
+                ], 400);
+            }
+        }
+    
         $answer = Answer::create([
             'question_id' => $questionId,
             'answer_text' => $request->answer_text,
             'is_correct' => $request->is_correct,
         ]);
-
+    
         return response()->json($answer, 201);
     }
+    
 
     public function update(Request $request, $id)
     {

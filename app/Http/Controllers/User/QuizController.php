@@ -7,6 +7,7 @@ use App\Models\Quiz;
 use App\Models\Question;
 use App\Models\QuizAttempt;
 use App\Models\UserAnswer;
+use App\Models\Answer;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Carbon\Carbon;
@@ -24,80 +25,95 @@ class QuizController extends Controller
             'quizzes' => $quizzes
         ]);
     }
-    
 
-    // Start a quiz - get random questions
-    // public function startQuiz($id)
-    // {
-    //     $quiz = Quiz::findOrFail($id);
-        
-    //     // Get 5 random questions for this quiz
-    //     $questions = Question::where('quiz_id', $quiz->id)
-    //         ->inRandomOrder()
-    //         ->limit(5)
-    //         ->with(['answers' => function($query) {
-    //             $query->inRandomOrder(); // Shuffle answers too
-    //         }])
-    //         ->get();
+// public function startQuiz($id)
+// {
+//     $quiz = Quiz::with(['category', 'difficultyLevel', 'questions.answers'])
+//         ->findOrFail($id);
+//     if ($quiz->questions->count() !== 5) {
+//         return response()->json([
+//             'message' => 'Quiz must have exactly 5 questions'
+//         ], 422);
+//     }
 
-    //     // Create a new quiz attempt
-    //     $attempt = QuizAttempt::create([
-    //         'user_id' => Auth::id(),
-    //         'quiz_id' => $quiz->id,
-    //         'started_at' => Carbon::now(),
-    //         'total_questions' => $questions->count()
-    //     ]);
+//     $attempt = QuizAttempt::create([
+//         'user_id' => auth()->id(),
+//         'quiz_id' => $quiz->id,
+//         'score' => 0,
+//         'total_questions' => 5, 
+//         'started_at' => now(),
+//     ]);
 
-    //     return response()->json([
-    //         'quiz' => $quiz,
-    //         'questions' => $questions,
-    //         'attempt_id' => $attempt->id
-    //     ]);
-    // }
-    //     public function startQuiz($id)
-    // {
-    //     $quiz = Quiz::with(['category', 'difficultyLevel'])->findOrFail($id);
+//     return response()->json([
+//         'attempt_id' => $attempt->id,
+//         'quiz' => $quiz,
+//     ]);
+// }
+// public function startQuiz($id)
+// {
+//     $quiz = Quiz::with(['questions.answers'])
+//         ->findOrFail($id);
 
-    //     // Get 5 random questions with their answers
-    //     $questions = $quiz->questions()->with('answers')->inRandomOrder()->limit(5)->get();
+//     // Validate all questions have answers
+//     foreach ($quiz->questions as $question) {
+//         if ($question->answers->isEmpty()) {
+//             return response()->json([
+//                 'message' => 'All questions must have at least one answer and atleast five question'
+//             ], 422);
+//         }
+//     }
+//         // Filter only questions with answers
+//     $validQuestions = $quiz->questions->filter(function ($question) {
+//         return $question->answers->isNotEmpty();
+//      });
+//     $selectedQuestions = $validQuestions->random(5)->values();
+//     $quiz->setRelation('questions', $selectedQuestions);
 
-    //     return response()->json([
-    //         'quiz' => [
-    //             'id' => $quiz->id,
-    //             'title' => $quiz->title,
-    //             'category' => $quiz->category,
-    //             'attempt_id' => $quiz->id,
-    //             'difficulty_level' => $quiz->difficultyLevel,
-    //             'time_limit_minutes' => $quiz->time_limit_minutes,
-    //             'questions' => $questions->map(function ($question) {
-    //                 return [
-    //                     'id' => $question->id,
-    //                     'question_text' => $question->question_text,
-    //                     'answers' => $question->answers->map(function ($answer) {
-    //                         return [
-    //                             'id' => $answer->id,
-    //                             'answer_text' => $answer->answer_text
-    //                             // Do NOT return is_correct
-    //                         ];
-    //                     }),
-    //                 ];
-    //             }),
-    //         ]
-    //     ]);
-    // }
+//     // Rest of your existing start quiz logic...
+//     $user = auth()->user();
+//     $attempt = QuizAttempt::create([
+//         'user_id' => $user->id,
+//         'quiz_id' => $quiz->id,
+//         'score' => 0,
+//         'total_questions' => 5,
+//         'started_at' => now(),
+//     ]);
 
-    public function startQuiz($id)
+//     return response()->json([
+//         'attempt_id' => $attempt->id,
+//         'quiz' => $quiz,
+//     ]);
+// }
+
+public function startQuiz($id)
 {
-    $quiz = Quiz::with(['category', 'difficultyLevel', 'questions.answers'])->findOrFail($id);
+    $quiz = Quiz::with(['questions.answers'])->findOrFail($id);
 
-    $user = auth()->user();
+    // Filter only questions with answers
+    $validQuestions = $quiz->questions->filter(function ($question) {
+        return $question->answers->isNotEmpty();
+    });
+
+    // Check for minimum 5 questions
+    if ($validQuestions->count() < 5) {
+        return response()->json([
+            'message' => 'Quiz must have at least 5 questions with at least one answer each.'
+        ], 422);
+    }
+
+    // Randomly select 5 questions
+    $selectedQuestions = $validQuestions->random(5)->values();
+    $selectedQuestions = $validQuestions->shuffle()->take(5)->values();
+    // Overwrite questions with selected ones
+    $quiz->setRelation('questions', $selectedQuestions);
 
     // Create quiz attempt
+    $user = auth()->user();
     $attempt = QuizAttempt::create([
         'user_id' => $user->id,
         'quiz_id' => $quiz->id,
         'score' => 0,
-        'total_questions' => $quiz->questions->count(),
+        'total_questions' => 5,
         'started_at' => now(),
     ]);
 
@@ -108,67 +124,64 @@ class QuizController extends Controller
 }
 
 
+
     // Submit quiz answers
     public function submitQuiz(Request $request, $quizId)
     {
         $request->validate([
+            'attempt_id' => 'required|exists:quiz_attempts,id,user_id,'.Auth::id(),
             'answers' => 'required|array|size:5',
-            'answers.*.question_id' => 'required|exists:questions,id',
-            'answers.*.answer_id' => 'required|exists:answers,id',
+            'answers.*.question_id' => 'required|exists:questions,id,quiz_id,'.$quizId,
         ]);
-        
-        // $request->validate([
-        //     'attempt_id' => 'required|exists:quiz_attempts,id,user_id,'.Auth::id(),
-        //     'answers' => 'required|array',
-        //     'answers.*.question_id' => 'required|exists:questions,id',
-        //     'answers.*.answer_id' => 'required|exists:answers,id',
-        // ]);
-
-        $quiz = Quiz::findOrFail($quizId);
-        // $attempt = QuizAttempt::findOrFail($request->attempt_id);
-
+    
         $attempt = QuizAttempt::where('id', $request->attempt_id)
             ->where('user_id', Auth::id())
             ->whereNull('completed_at')
             ->firstOrFail();
-
+    
         $score = 0;
         $userAnswers = [];
-
+    
         foreach ($request->answers as $answer) {
-            $question = Question::find($answer['question_id']);
-            $selectedAnswer = $question->answers()->find($answer['answer_id']);
-            
-            $isCorrect = $selectedAnswer ? $selectedAnswer->is_correct : false;
-            if ($isCorrect) {
-                $score++;
+            $isCorrect = false;
+            $answerId = null;
+    
+            if ($answer['answer_id']) {
+                $answerId = $answer['answer_id'];
+                $correctAnswer = Answer::where('id', $answerId)
+                    ->where('is_correct', true)
+                    ->exists();
+                
+                $isCorrect = $correctAnswer;
+                if ($isCorrect) {
+                    $score++;
+                }
             }
-
+    
             $userAnswers[] = [
                 'attempt_id' => $attempt->id,
-                'question_id' => $question->id,
-                'answer_id' => $selectedAnswer->id,
+                'question_id' => $answer['question_id'],
+                'answer_id' => $answerId,
                 'is_correct' => $isCorrect,
-                'created_at' => Carbon::now(),
-                'updated_at' => Carbon::now(),
+                'created_at' => now(),
+                'updated_at' => now()
             ];
         }
-
-        // Bulk insert user answers
+    
         UserAnswer::insert($userAnswers);
-
-        // Update attempt with score and completion time
+    
         $attempt->update([
             'score' => $score,
-            'completed_at' => Carbon::now()
+            'completed_at' => now()
         ]);
-
+    
         return response()->json([
             'message' => 'Quiz submitted successfully',
             'score' => $score,
             'total_questions' => $attempt->total_questions
         ]);
     }
+    
 
     // Get user's quiz attempts history
     public function myAttempts()

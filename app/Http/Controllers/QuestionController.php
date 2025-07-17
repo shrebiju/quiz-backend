@@ -27,5 +27,28 @@ class QuestionController extends Controller
     {
         return Question::where('quiz_id', $quizId)->get();
     }
+
+    // public function destroy($quizId)
+    // {
+    //     $question = Question::findOrFail($quizId);
+    //     $question->delete();
+    //     return response()->json(['message' => 'Question deleted successfully']);
+    // }
+    public function destroy($id)
+    {
+        $question = Question::findOrFail($id);
+        
+        // Optional: Verify the question belongs to admin's quiz
+        if (!auth()->user()->isAdmin()) {
+            abort(403, 'Unauthorized action.');
+        }
+    
+        $question->delete();
+        
+        return response()->json([
+            'message' => 'Question deleted successfully'
+        ]);
+    
+}
 }
 
